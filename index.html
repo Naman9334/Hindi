@@ -1,0 +1,894 @@
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Hindi Objective Quiz</title>
+
+    <style>
+        :root {
+            --bg: #f4f6fb;
+            --card: #ffffff;
+            --text: #222222;
+            --muted: #666666;
+            --primary: #4f46e5;
+            --border: #dddddd;
+            --correct: #16a34a;
+            --wrong: #dc2626;
+        }
+
+        body.dark {
+            --bg: #121212;
+            --card: #1e1e1e;
+            --text: #f5f5f5;
+            --muted: #bbbbbb;
+            --primary: #818cf8;
+            --border: #444444;
+            --correct: #22c55e;
+            --wrong: #f87171;
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            padding: 20px;
+            font-family: Arial, "Noto Sans Devanagari", sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            transition: background 0.2s, color 0.2s;
+        }
+
+        .container {
+            max-width: 750px;
+            margin: 0 auto;
+        }
+
+        header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 20px;
+        }
+
+        h1 {
+            font-size: 26px;
+            margin: 0;
+        }
+
+        button {
+            font-family: inherit;
+            cursor: pointer;
+        }
+
+        button:disabled {
+            cursor: not-allowed;
+            opacity: 0.75;
+        }
+
+        .theme-btn {
+            background: var(--card);
+            color: var(--text);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 9px 12px;
+            font-size: 18px;
+        }
+
+        .card {
+            background: var(--card);
+            border: 1px solid var(--border);
+            border-radius: 14px;
+            padding: 24px;
+            box-shadow: 0 4px 14px rgba(0, 0, 0, 0.04);
+        }
+
+        .hidden {
+            display: none !important;
+        }
+
+        .home-content {
+            text-align: center;
+        }
+
+        .home-content h2 {
+            margin-top: 5px;
+        }
+
+        .home-content p {
+            color: var(--muted);
+            line-height: 1.7;
+        }
+
+        .main-btn,
+        .secondary-btn {
+            border: none;
+            border-radius: 8px;
+            padding: 12px 18px;
+            font-size: 16px;
+            margin: 6px 4px;
+        }
+
+        .main-btn {
+            background: var(--primary);
+            color: white;
+        }
+
+        .secondary-btn {
+            background: var(--bg);
+            color: var(--text);
+            border: 1px solid var(--border);
+        }
+
+        .stats {
+            display: flex;
+            justify-content: space-between;
+            gap: 10px;
+            flex-wrap: wrap;
+            margin-bottom: 18px;
+            color: var(--muted);
+            font-size: 14px;
+        }
+
+        .progress-track {
+            height: 8px;
+            background: var(--border);
+            border-radius: 20px;
+            overflow: hidden;
+            margin-bottom: 22px;
+        }
+
+        .progress-bar {
+            height: 100%;
+            width: 0%;
+            background: var(--primary);
+            transition: width 0.2s;
+        }
+
+        .question-number {
+            color: var(--primary);
+            font-weight: bold;
+            margin-bottom: 10px;
+            font-size: 15px;
+        }
+
+        .chapter-name {
+            display: inline-block;
+            background: var(--bg);
+            color: var(--primary);
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            padding: 6px 12px;
+            margin-bottom: 16px;
+            font-size: 15px;
+            font-weight: bold;
+        }
+
+        .question-text {
+            font-size: 22px;
+            line-height: 1.8;
+            margin: 0 0 22px;
+        }
+
+        .options {
+            display: grid;
+            gap: 12px;
+        }
+
+        .option {
+            width: 100%;
+            text-align: left;
+            background: var(--card);
+            color: var(--text);
+            border: 1px solid var(--border);
+            border-radius: 9px;
+            padding: 14px;
+            font-size: 17px;
+            line-height: 1.7;
+            transition: 0.15s;
+        }
+
+        .option:hover:not(:disabled) {
+            border-color: var(--primary);
+        }
+
+        .option.correct {
+            background: rgba(22, 163, 74, 0.12);
+            border: 2px solid var(--correct);
+        }
+
+        .option.wrong {
+            background: rgba(220, 38, 38, 0.10);
+            border: 2px solid var(--wrong);
+        }
+
+        .feedback {
+            margin-top: 20px;
+            font-size: 18px;
+            font-weight: bold;
+            line-height: 1.7;
+        }
+
+        .feedback.correct-text {
+            color: var(--correct);
+        }
+
+        .feedback.wrong-text {
+            color: var(--wrong);
+        }
+
+        .answer-display {
+            margin-top: 12px;
+            font-size: 17px;
+            font-weight: bold;
+            line-height: 1.7;
+        }
+
+        .explanation-box {
+            background: var(--bg);
+            border-left: 4px solid var(--primary);
+            border-radius: 8px;
+            padding: 15px;
+            margin-top: 16px;
+            line-height: 1.8;
+        }
+
+        .explanation-box h3 {
+            margin: 0 0 8px;
+            font-size: 17px;
+        }
+
+        .explanation-box p {
+            margin: 0;
+            font-size: 16px;
+        }
+
+        .quiz-controls {
+            display: flex;
+            justify-content: space-between;
+            gap: 10px;
+            flex-wrap: wrap;
+            margin-top: 22px;
+        }
+
+        .streak-message {
+            text-align: center;
+            color: var(--primary);
+            font-weight: bold;
+            font-size: 18px;
+            margin-top: 16px;
+            line-height: 1.7;
+        }
+
+        .result {
+            text-align: center;
+        }
+
+        .result h2 {
+            font-size: 28px;
+        }
+
+        .result p {
+            line-height: 1.8;
+            color: var(--muted);
+        }
+
+        .error-message {
+            color: var(--wrong);
+            text-align: center;
+            line-height: 1.7;
+        }
+
+        @media (max-width: 500px) {
+            body {
+                padding: 12px;
+            }
+
+            .card {
+                padding: 18px;
+            }
+
+            h1 {
+                font-size: 21px;
+            }
+
+            .question-text {
+                font-size: 20px;
+            }
+
+            .option {
+                font-size: 16px;
+            }
+
+            .quiz-controls button {
+                flex: 1;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+<div class="container">
+
+    <!-- HEADER -->
+    <header>
+        <h1>📚 हिंदी Objective Quiz</h1>
+
+        <button
+            class="theme-btn"
+            id="themeBtn"
+            onclick="toggleTheme()"
+            aria-label="Toggle dark mode">
+            🌙
+        </button>
+    </header>
+
+    <!-- HOME SCREEN -->
+    <section class="card home-content" id="homeScreen">
+
+        <h2>हिंदी विषय अभ्यास</h2>
+
+        <p>
+            हिंदी विषय के वस्तुनिष्ठ प्रश्नों का अभ्यास करें।
+            सही उत्तर चुनें और अपनी तैयारी को बेहतर बनाएं।
+        </p>
+
+        <button class="main-btn" onclick="startQuiz('all')">
+            ▶ क्विज़ शुरू करें
+        </button>
+
+        <button class="secondary-btn" onclick="startQuiz('wrong')">
+            🔁 गलत प्रश्न दोबारा करें
+        </button>
+
+        <p id="homeStats"></p>
+
+    </section>
+
+    <!-- QUIZ SCREEN -->
+    <section class="card hidden" id="quizScreen">
+
+        <div class="stats">
+            <span id="questionCounter">प्रश्न 1</span>
+            <span id="scoreText">सही उत्तर: 0</span>
+            <span id="accuracyText">Accuracy: 0%</span>
+        </div>
+
+        <div class="progress-track">
+            <div class="progress-bar" id="progressBar"></div>
+        </div>
+
+        <div class="question-number" id="questionNumber"></div>
+
+        <!-- Chapter name -->
+        <div class="chapter-name hidden" id="chapterName"></div>
+
+        <h2 class="question-text" id="questionText"></h2>
+
+        <div class="options" id="optionsContainer"></div>
+
+        <div class="feedback" id="feedback"></div>
+
+        <!-- Explanation -->
+        <div class="explanation-box hidden" id="explanationBox">
+            <h3>💡 व्याख्या</h3>
+            <p id="explanationText"></p>
+        </div>
+
+        <div class="streak-message" id="streakMessage"></div>
+
+        <div class="quiz-controls">
+
+            <button class="secondary-btn" onclick="goHome()">
+                🏠 होम
+            </button>
+
+            <button
+                class="main-btn hidden"
+                id="nextBtn"
+                onclick="nextQuestion()">
+                अगला प्रश्न ➜
+            </button>
+
+        </div>
+
+    </section>
+
+    <!-- RESULT SCREEN -->
+    <section class="card result hidden" id="resultScreen">
+
+        <h2>🎉 क्विज़ पूरा हुआ!</h2>
+
+        <p id="resultText"></p>
+
+        <button class="main-btn" onclick="startQuiz('all')">
+            🔄 फिर से शुरू करें
+        </button>
+
+        <button class="secondary-btn" onclick="startQuiz('wrong')">
+            गलत प्रश्न दोबारा करें
+        </button>
+
+        <button class="secondary-btn" onclick="goHome()">
+            🏠 होम
+        </button>
+
+    </section>
+
+    <!-- ERROR SCREEN -->
+    <section class="card hidden" id="errorScreen">
+
+        <h3>प्रश्न लोड नहीं हो सके</h3>
+
+        <p class="error-message" id="errorText"></p>
+
+        <button class="secondary-btn" onclick="goHome()">
+            🏠 होम पर वापस जाएँ
+        </button>
+
+    </section>
+
+</div>
+
+<script>
+    let allQuestions = [];
+    let quizQuestions = [];
+
+    let currentIndex = 0;
+    let correctCount = 0;
+    let answeredCount = 0;
+    let streak = 0;
+
+    let quizFinished = false;
+
+    // Feedback messages
+    const correctMessages = [
+        "बहुत बढ़िया! 🎉",
+        "शानदार! सही उत्तर! 🌟",
+        "एकदम सही! 👏",
+        "वाह! आप सही जा रहे हैं! 🚀",
+        "सही जवाब! ऐसे ही आगे बढ़ते रहें! 💯"
+    ];
+
+    const wrongMessages = [
+        "कोई बात नहीं, अगली बार सही होगा! 💪",
+        "गलत उत्तर। अभ्यास करते रहें! 📚",
+        "इस बार चूक गए, आगे बढ़ें! 😊",
+        "चिंता न करें, सीखना जारी रखें! 🌱",
+        "गलत जवाब, लेकिन हार नहीं माननी! 🔥"
+    ];
+
+    // Load questions from questions.json
+    async function loadQuestions() {
+        try {
+            const response = await fetch("questions.json");
+
+            if (!response.ok) {
+                throw new Error("questions.json फ़ाइल नहीं मिल सकी।");
+            }
+
+            const data = await response.json();
+
+            if (!Array.isArray(data) || data.length === 0) {
+                throw new Error("JSON फ़ाइल में प्रश्न उपलब्ध नहीं हैं।");
+            }
+
+            allQuestions = data;
+
+            updateHomeStats();
+
+        } catch (error) {
+            document.getElementById("homeScreen").classList.add("hidden");
+            document.getElementById("errorScreen").classList.remove("hidden");
+
+            document.getElementById("errorText").textContent =
+                error.message +
+                " सुनिश्चित करें कि questions.json फ़ाइल उसी फ़ोल्डर में मौजूद है और वेबसाइट सर्वर के माध्यम से चल रही है।";
+        }
+    }
+
+    // Start quiz
+    function startQuiz(type) {
+        if (allQuestions.length === 0) {
+            alert("प्रश्न अभी लोड नहीं हुए हैं। कृपया थोड़ी देर बाद प्रयास करें।");
+            return;
+        }
+
+        if (type === "wrong") {
+            const wrongIds = JSON.parse(
+                localStorage.getItem("wrongQuestionIds") || "[]"
+            );
+
+            quizQuestions = allQuestions.filter(question =>
+                wrongIds.includes(String(question.id))
+            );
+
+            if (quizQuestions.length === 0) {
+                alert("अभी कोई गलत प्रश्न सेव नहीं है।");
+                return;
+            }
+
+        } else {
+            quizQuestions = [...allQuestions];
+            shuffleArray(quizQuestions);
+        }
+
+        currentIndex = 0;
+        correctCount = 0;
+        answeredCount = 0;
+        streak = 0;
+        quizFinished = false;
+
+        document.getElementById("homeScreen").classList.add("hidden");
+        document.getElementById("resultScreen").classList.add("hidden");
+        document.getElementById("errorScreen").classList.add("hidden");
+        document.getElementById("quizScreen").classList.remove("hidden");
+
+        showQuestion();
+    }
+
+    // Display question
+    function showQuestion() {
+        const question = quizQuestions[currentIndex];
+
+        if (!question) {
+            finishQuiz();
+            return;
+        }
+
+        document.getElementById("questionCounter").textContent =
+            `प्रश्न ${currentIndex + 1} / ${quizQuestions.length}`;
+
+        document.getElementById("questionNumber").textContent =
+            `प्रश्न संख्या: ${question.question_number ?? question.id ?? currentIndex + 1}`;
+
+        // Display chapter name
+        const chapterElement = document.getElementById("chapterName");
+
+        if (question.chapter && question.chapter.trim()) {
+            chapterElement.textContent = `अध्याय: ${question.chapter}`;
+            chapterElement.classList.remove("hidden");
+        } else {
+            chapterElement.textContent = "";
+            chapterElement.classList.add("hidden");
+        }
+
+        document.getElementById("questionText").textContent =
+            question.question;
+
+        document.getElementById("scoreText").textContent =
+            `सही उत्तर: ${correctCount}`;
+
+        document.getElementById("accuracyText").textContent =
+            `Accuracy: ${getAccuracy()}%`;
+
+        const progress = (currentIndex / quizQuestions.length) * 100;
+
+        document.getElementById("progressBar").style.width =
+            `${progress}%`;
+
+        document.getElementById("feedback").textContent = "";
+        document.getElementById("feedback").className = "feedback";
+
+        document.getElementById("explanationBox").classList.add("hidden");
+        document.getElementById("explanationText").textContent = "";
+
+        document.getElementById("streakMessage").textContent = "";
+        document.getElementById("nextBtn").classList.add("hidden");
+
+        const optionsContainer =
+            document.getElementById("optionsContainer");
+
+        optionsContainer.innerHTML = "";
+
+        Object.entries(question.options).forEach(([letter, text]) => {
+            const button = document.createElement("button");
+
+            button.className = "option";
+            button.textContent = `${letter}. ${text}`;
+
+            button.onclick = () => checkAnswer(letter, button);
+
+            optionsContainer.appendChild(button);
+        });
+    }
+
+    // Extract the answer letter from values like:
+    // "B - वीरगाथा काल"
+    // Also supports the letter-only format: "B"
+    function getAnswerLetter(answer) {
+        if (typeof answer !== "string") {
+            return "";
+        }
+
+        const match = answer.trim().match(/^([A-D])/i);
+
+        return match ? match[1].toUpperCase() : "";
+    }
+
+    // Check selected answer
+    function checkAnswer(selectedLetter, selectedButton) {
+        if (quizFinished) return;
+
+        const question = quizQuestions[currentIndex];
+        const correctLetter = getAnswerLetter(question.answer);
+
+        if (!correctLetter || !question.options[correctLetter]) {
+            alert("इस प्रश्न का सही उत्तर JSON फ़ाइल में सही प्रारूप में नहीं है।");
+            return;
+        }
+
+        const optionButtons = document.querySelectorAll(".option");
+
+        // Prevent answering multiple times
+        optionButtons.forEach(button => {
+            button.disabled = true;
+        });
+
+        answeredCount++;
+
+        const feedback = document.getElementById("feedback");
+        const streakMessage = document.getElementById("streakMessage");
+
+        if (selectedLetter === correctLetter) {
+            correctCount++;
+            streak++;
+
+            selectedButton.classList.add("correct");
+
+            feedback.textContent = randomMessage(correctMessages);
+            feedback.className = "feedback correct-text";
+
+            removeWrongQuestion(question.id);
+
+            if (streak === 5) {
+                streakMessage.textContent =
+                    "🔥 शानदार! लगातार 5 सही उत्तर!";
+            } else if (streak === 10) {
+                streakMessage.textContent =
+                    "🏆 कमाल है! लगातार 10 सही उत्तर!";
+            }
+
+        } else {
+            streak = 0;
+
+            selectedButton.classList.add("wrong");
+
+            feedback.textContent = randomMessage(wrongMessages);
+            feedback.className = "feedback wrong-text";
+
+            // Highlight correct option
+            optionButtons.forEach(button => {
+                if (button.textContent.startsWith(correctLetter + ".")) {
+                    button.classList.add("correct");
+                }
+            });
+
+            saveWrongQuestion(question.id);
+        }
+
+        // Update quiz statistics
+        document.getElementById("scoreText").textContent =
+            `सही उत्तर: ${correctCount}`;
+
+        document.getElementById("accuracyText").textContent =
+            `Accuracy: ${getAccuracy()}%`;
+
+        // Display answer letter and answer text together
+        const answerText = getFormattedAnswer(question);
+
+        const answerDisplay = document.createElement("p");
+        answerDisplay.className = "answer-display";
+        answerDisplay.textContent = `सही उत्तर: ${answerText}`;
+
+        feedback.appendChild(answerDisplay);
+
+        // Display explanation
+        const explanationBox =
+            document.getElementById("explanationBox");
+
+        const explanationText =
+            document.getElementById("explanationText");
+
+        explanationText.textContent =
+            question.explanation && question.explanation.trim()
+                ? question.explanation
+                : "इस प्रश्न की व्याख्या उपलब्ध नहीं है।";
+
+        explanationBox.classList.remove("hidden");
+
+        // Show next button
+        document.getElementById("nextBtn").classList.remove("hidden");
+
+        // Save progress
+        saveStats();
+    }
+
+    // Return answer as "B - वीरगाथा काल"
+    // If JSON contains only "B", get the option text automatically.
+    function getFormattedAnswer(question) {
+        const answer = question.answer.trim();
+        const letter = getAnswerLetter(answer);
+
+        if (!letter) {
+            return answer;
+        }
+
+        const optionText = question.options[letter];
+
+        if (!optionText) {
+            return answer;
+        }
+
+        // If answer already contains the option text, keep it as provided.
+        if (answer.includes("-")) {
+            return answer;
+        }
+
+        return `${letter} - ${optionText}`;
+    }
+
+    // Move to next question
+    function nextQuestion() {
+        currentIndex++;
+
+        if (currentIndex >= quizQuestions.length) {
+            finishQuiz();
+        } else {
+            showQuestion();
+        }
+    }
+
+    // Finish quiz
+    function finishQuiz() {
+        quizFinished = true;
+
+        document.getElementById("quizScreen").classList.add("hidden");
+        document.getElementById("resultScreen").classList.remove("hidden");
+
+        const accuracy = getAccuracy();
+
+        document.getElementById("resultText").textContent =
+            `आपने ${quizQuestions.length} प्रश्नों का अभ्यास किया। ` +
+            `आपके सही उत्तर ${correctCount} हैं और गलत उत्तर ${answeredCount - correctCount} हैं। ` +
+            `आपकी Accuracy ${accuracy}% रही।`;
+
+        updateHomeStats();
+    }
+
+    // Save wrong question ID
+    function saveWrongQuestion(id) {
+        const wrongIds = JSON.parse(
+            localStorage.getItem("wrongQuestionIds") || "[]"
+        );
+
+        const idString = String(id);
+
+        if (!wrongIds.includes(idString)) {
+            wrongIds.push(idString);
+        }
+
+        localStorage.setItem(
+            "wrongQuestionIds",
+            JSON.stringify(wrongIds)
+        );
+    }
+
+    // Remove question from wrong list after correct answer
+    function removeWrongQuestion(id) {
+        let wrongIds = JSON.parse(
+            localStorage.getItem("wrongQuestionIds") || "[]"
+        );
+
+        wrongIds = wrongIds.filter(item => item !== String(id));
+
+        localStorage.setItem(
+            "wrongQuestionIds",
+            JSON.stringify(wrongIds)
+        );
+    }
+
+    // Save cumulative statistics
+    function saveStats() {
+        const stats = JSON.parse(
+            localStorage.getItem("quizStats") || "{}"
+        );
+
+        stats.answered = (stats.answered || 0) + 1;
+
+        if (getAnswerLetter(quizQuestions[currentIndex].answer) ===
+            getAnswerLetter(quizQuestions[currentIndex].answer)) {
+            // Correct/incorrect totals are updated below using the selected answer result.
+        }
+
+        stats.correct = stats.correct || 0;
+        stats.totalCorrect = stats.totalCorrect || 0;
+
+        // Store current total attempts and correct answers.
+        // These values are accumulated after each answer.
+        stats.totalCorrect += 0;
+
+        localStorage.setItem("quizStats", JSON.stringify(stats));
+    }
+
+    // Calculate current quiz accuracy
+    function getAccuracy() {
+        if (answeredCount === 0) return 0;
+
+        return Math.round((correctCount / answeredCount) * 100);
+    }
+
+    // Update home screen statistics
+    function updateHomeStats() {
+        const wrongIds = JSON.parse(
+            localStorage.getItem("wrongQuestionIds") || "[]"
+        );
+
+        const stats = JSON.parse(
+            localStorage.getItem("quizStats") || "{}"
+        );
+
+        document.getElementById("homeStats").textContent =
+            `कुल प्रश्न: ${allQuestions.length} | ` +
+            `गलत प्रश्न सेव: ${wrongIds.length} | ` +
+            `कुल प्रयास: ${stats.answered || 0}`;
+    }
+
+    // Return to home screen
+    function goHome() {
+        document.getElementById("quizScreen").classList.add("hidden");
+        document.getElementById("resultScreen").classList.add("hidden");
+        document.getElementById("errorScreen").classList.add("hidden");
+        document.getElementById("homeScreen").classList.remove("hidden");
+
+        updateHomeStats();
+    }
+
+    // Pick a random feedback message
+    function randomMessage(messages) {
+        return messages[Math.floor(Math.random() * messages.length)];
+    }
+
+    // Shuffle questions
+    function shuffleArray(array) {
+        for (let i = array.length - 1; i > 0; i--) {
+            const j = Math.floor(Math.random() * (i + 1));
+
+            [array[i], array[j]] = [array[j], array[i]];
+        }
+    }
+
+    // Toggle dark mode
+    function toggleTheme() {
+        document.body.classList.toggle("dark");
+
+        const isDark = document.body.classList.contains("dark");
+
+        localStorage.setItem("darkMode", isDark ? "true" : "false");
+
+        document.getElementById("themeBtn").textContent =
+            isDark ? "☀️" : "🌙";
+    }
+
+    // Load saved theme
+    function loadTheme() {
+        const isDark = localStorage.getItem("darkMode") === "true";
+
+        if (isDark) {
+            document.body.classList.add("dark");
+            document.getElementById("themeBtn").textContent = "☀️";
+        }
+    }
+
+    // Initialize website
+    loadTheme();
+    loadQuestions();
+</script>
+
+</body>
+</html>
